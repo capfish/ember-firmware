@@ -41,7 +41,6 @@ typedef enum InterfaceEvent {
     EventButton2Pressed = 2,
     EventButton2Held = 3,
     EventInterfaceProcessing = 4,
-    EventBothButtonsHeld = 5,
     //EventCommandReceived = 5,
     //EventAnimationEnd = 6,
     //EventError = 7

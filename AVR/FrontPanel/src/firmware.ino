@@ -82,33 +82,33 @@ void printLog(const char *msg,int level) {
 
 #ifdef DEBUG
 
-        if (level == LOG_INFO) {
-            LogSerial.print(F("\033[34m"));
-            LogSerial.print(millis());
-            LogSerial.print(F(": "));
-            LogSerial.print(msg);
-            LogSerial.print(F("\r\n"));
-            LogSerial.print(F("\033[0m"));
-            return;
-        }
-        if (level == LOG_ERROR) {
-            LogSerial.print(F("\033[31m"));
-            LogSerial.print(millis());
-            LogSerial.print(F(": "));
-            LogSerial.print(msg);
-            LogSerial.print(F("\r\n"));
-            LogSerial.print(F("\033[0m"));
-            return;
-        }
-        if (level == LOG_DEBUG) {
-            LogSerial.print(F("\033[32m"));
-            LogSerial.print(millis());
-            LogSerial.print(F(": "));
-            LogSerial.print(msg);
-            LogSerial.print(F("\r\n"));
-            LogSerial.print(F("\033[0m"));
-            return;
-        }
+    if (level == LOG_INFO) {
+        LogSerial.print(F("\033[34m"));
+        LogSerial.print(millis());
+        LogSerial.print(F(": "));
+        LogSerial.print(msg);
+        LogSerial.print(F("\r\n"));
+        LogSerial.print(F("\033[0m"));
+        return;
+    }
+    if (level == LOG_ERROR) {
+        LogSerial.print(F("\033[31m"));
+        LogSerial.print(millis());
+        LogSerial.print(F(": "));
+        LogSerial.print(msg);
+        LogSerial.print(F("\r\n"));
+        LogSerial.print(F("\033[0m"));
+        return;
+    }
+    if (level == LOG_DEBUG) {
+        LogSerial.print(F("\033[32m"));
+        LogSerial.print(millis());
+        LogSerial.print(F(": "));
+        LogSerial.print(msg);
+        LogSerial.print(F("\r\n"));
+        LogSerial.print(F("\033[0m"));
+        return;
+    }
 #endif
 
 }
@@ -120,7 +120,7 @@ void printLog(const char *msg,int level) {
  * \brief I2C request interrupt handler.
  */
 void isr_i2c_request() {
-//    Serial.println("**I2C request**");
+    //    Serial.println("**I2C request**");
     interface.request();
 }
 
@@ -142,18 +142,18 @@ void isr_button1() {
     button1.interrupt();
     
     //time how long the button is held with timer2
-    if(button1.state() == ButtonDepressed) {
-      button1Flag = 1;
-      if(!button2Flag) {
-	TCNT2 = 0; //initlize timer2
-	TIMSK2 |= (1 << TOIE2); //enable timer2 over flow interrupt
-      }
+    if (button1.state() == ButtonDepressed) {
+        button1Flag = 1;
+        if (!button2Flag) {
+            TCNT2 = 0; //initlize timer2
+            TIMSK2 |= (1 << TOIE2); //enable timer2 over flow interrupt
+        }
     }
     
     //handle button events, use 'while' instead of 'if' to block against interrupts
     while (button1.state() == ButtonPressed) {
         button1.reset_state();
-	resetTimer2();
+        resetTimer2();
         //Log.debug("Button 1: pressed");
         if (interface.WakeScreen()){//only send commands if the screen is awake
             interface.process_event(EventButton1Pressed);
@@ -168,7 +168,6 @@ void isr_button1() {
 
     while (button1.state() == ButtonHeld) {
         button1.reset_state();
-	resetTimer2();
         //Log.debug("Button 1: held");
     }
 }
@@ -179,18 +178,18 @@ void isr_button1() {
 void isr_button2() {
     button2.interrupt();
 
-    if(button2.state() == ButtonDepressed) {
-      button2Flag = 1;
-      if(!button1Flag) {
-	TCNT2 = 0; //initlize timer2
-	TIMSK2 |= (1 << TOIE2); //enable timer2 over flow interrupt
-      }
+    if (button2.state() == ButtonDepressed) {
+        button2Flag = 1;
+        if (!button1Flag) {
+            TCNT2 = 0; //initlize timer2
+            TIMSK2 |= (1 << TOIE2); //enable timer2 over flow interrupt
+        }
     }
 
     // again, use 'while' instead of 'if' to block against interrupts
     while (button2.state() == ButtonPressed) {
         button2.reset_state();
-	resetTimer2();
+        resetTimer2();
         //Log.debug("Button 2: pressed");
         if (interface.WakeScreen()){//only send commands if the screen is awake
             interface.process_event(EventButton2Pressed);
@@ -201,10 +200,6 @@ void isr_button2() {
     while (button2.state() == ButtonHeld) {
         button2.reset_state();
         //Log.debug("Button 2: held");
-        if (interface.WakeScreen()){//only send commands if the screen is awake
-            interface.process_event(EventButton2Held);
-            interface.start_interrupt();
-        }
     }
 }
 
@@ -214,21 +209,23 @@ void isr_timer1() {
 
 ISR(TIMER2_OVF_vect)
 {
-  //allows held button to trigger event while being held
-  OVCounter++;
-  if((OVCounter * 32) > BUTTON_HOLD_TIME_MS) {
-    OVCounter = 0;
-    if (interface.WakeScreen()) {//only send commands if the screen is awake
-      if(button1Flag && button2Flag) {
-	interface.process_event(EventBothButtonsHeld);
-      } else if(button1Flag) {
-	interface.process_event(EventButton1Held);
-      } else {
-	interface.process_event(EventButton2Held);
-      }
-      interface.start_interrupt();
+    //allows held button to trigger event while being held
+    OVCounter++;
+    if((OVCounter * 32) > BUTTON_HOLD_TIME_MS) {
+        OVCounter = 0;
+        if (interface.WakeScreen()) {//only send commands if the screen is awake
+            if (button1Flag && button2Flag) {
+                interface.process_event(EventButton1Held);
+                interface.process_event(EventButton2Held);
+            } else if (button1Flag) {
+                interface.process_event(EventButton1Held);
+            } else if (button2Flag){
+                interface.process_event(EventButton2Held);
+            }
+            interface.start_interrupt();
+            resetTimer2();
+        }
     }
-  }
 }
 
 
@@ -297,8 +294,8 @@ void loop() {
 }
 
 void resetTimer2() {
-  button1Flag = 0;
-  button2Flag = 0;
-  OVCounter = 0;
-  TIMSK2 = 0; //disable overflow interrupts
+    button1Flag = 0;
+    button2Flag = 0;
+    OVCounter = 0;
+    TIMSK2 = 0; //disable overflow interrupts
 }
