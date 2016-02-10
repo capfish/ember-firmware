@@ -58,8 +58,6 @@
 // much less than the old one you must reset it or risk motor stalls.
 #define ACCUMULATOR_RESET_FACTOR 2  // amount counter range can safely change
 
-#define MOTOR_DUTY_CYCLE 180
-
 // Runtime structures - used exclusively by step generation ISR (HI)
 struct MotorRuntimeState // one per controlled motor
 {     
@@ -123,8 +121,8 @@ void Motors::Initialize(MotorController_t* mc)
     DDA_TIMER_PERIOD = _f_to_period(F_DDA);
 
     // Setup load software interrupt timer
-    // Clear timer and generate interrupt on compare match
-    // LOAD_TIMER_CTRLA  |= LOAD_TIMER_WGM_BM;
+    // Clear timer and generate interrupt on compare match A
+    // and setup PWM on compare match B
     LOAD_TIMER_CTRLA  |= LOAD_TIMER_WGM0_BM;
     LOAD_TIMER_CTRLA  |= LOAD_TIMER_WGM2_BM;
     LOAD_TIMER_CTRLA  |= LOAD_TIMER_COMB1_BM;
@@ -132,11 +130,11 @@ void Motors::Initialize(MotorController_t* mc)
     LOAD_TIMER_CTRLB  = 0;
     LOAD_TIMER_IMSK   = LOAD_TIMER_OCIE_BM;
     LOAD_TIMER_PERIOD = SOFTWARE_INTERRUPT_PERIOD;
-    LOAD_TIMER_PWM_PERIOD = MOTOR_DUTY_CYCLE;
+    LOAD_TIMER_PWM_PERIOD = AxisSettings::Current();
 
     // Setup exec software interrupt timer
-    // Clear timer and generate interrupt on compare match
-    // EXEC_TIMER_CTRLA  |= EXEC_TIMER_WGM_BM;
+    // Clear timer and generate interrupt on compare match A
+    // and setup PWM on compare match B
     EXEC_TIMER_CTRLA  |= EXEC_TIMER_WGM0_BM;
     EXEC_TIMER_CTRLA  |= EXEC_TIMER_WGM2_BM;
     EXEC_TIMER_CTRLA  |= EXEC_TIMER_COMB1_BM;
@@ -144,7 +142,7 @@ void Motors::Initialize(MotorController_t* mc)
     EXEC_TIMER_CTRLB  = 0;
     EXEC_TIMER_IMSK   = EXEC_TIMER_OCIE_BM;    
     EXEC_TIMER_PERIOD =  SOFTWARE_INTERRUPT_PERIOD;
-    EXEC_TIMER_PWM_PERIOD = MOTOR_DUTY_CYCLE;
+    EXEC_TIMER_PWM_PERIOD = AxisSettings::Current();
 
     // Set data direction for motor I/O pins
     MOTOR_SLEEP_DDR       |= MOTOR_SLEEP_DD_BM;

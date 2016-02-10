@@ -215,11 +215,17 @@ ISR(TIMER2_OVF_vect)
         OVCounter = 0;
         if (interface.WakeScreen()) {//only send commands if the screen is awake
             if (button1Flag && button2Flag) {
+                interface.clear_event(EventButton1Pressed);
+                interface.clear_event(EventButton2Pressed);
                 interface.process_event(EventButton1Held);
                 interface.process_event(EventButton2Held);
             } else if (button1Flag) {
+                interface.clear_event(EventButton1Pressed);
+                interface.clear_event(EventButton2Pressed);
                 interface.process_event(EventButton1Held);
             } else if (button2Flag){
+                interface.clear_event(EventButton1Pressed);
+                interface.clear_event(EventButton2Pressed);
                 interface.process_event(EventButton2Held);
             }
             interface.start_interrupt();
