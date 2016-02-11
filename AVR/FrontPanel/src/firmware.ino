@@ -203,7 +203,6 @@ void isr_button2() {
         button2.reset_state();
         //Log.debug("Button 2: held");
     }
-    bitClear(EIMSK,INT1);
 }
 
 void isr_timer1() {
