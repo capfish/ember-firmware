@@ -156,18 +156,17 @@
 #define EXEC_TIMER_CTRLB    TCCR0B            // Control register B
 #define EXEC_TIMER_IMSK     TIMSK0            // Interrupt mask register
 #define EXEC_TIMER_PERIOD   OCR0A             // Output compare register A (period of the timer)
-#define EXEC_TIMER_PWM_PERIOD OCR0B
+#define EXEC_TIMER_PWM_PERIOD OCR0B           // Output compare register B (PWM duty cycle)
 #define EXEC_TIMER_ISR_vect TIMER0_COMPA_vect // Output compare interrupt service routine vector
-#define EXEC_TIMER_CNT      TCNT0
+#define EXEC_TIMER_CNT      TCNT0             // Timer count register
 #define EXEC_TIMER_IFR      TIFR0             // Interrupt flag register
 #define EXEC_TIMER_CS_BM    (1<<CS00)         // Set clock source to F_CPU
-#define EXEC_TIMER_WGM0_BM  (1<<WGM00)
-#define EXEC_TIMER_WGM_BM   (1<<WGM01)        // Waveform generation mode
-#define EXEC_TIMER_WGM2_BM  (1<<WGM02)
+#define EXEC_TIMER_WGM0_BM  (1<<WGM00)        // Waveform generation mode0
+#define EXEC_TIMER_WGM2_BM  (1<<WGM02)        // Waveform gneration mode2
 #define EXEC_TIMER_OCIE_BM  (1<<OCIE0A)       // Enable output compare match interrupt
-#define EXEC_TIMER_OCF_BM   (1<<OCF0A)
-#define EXEC_TIMER_COMB1_BM (1<<COM0B1)
-#define EXEC_TIMER_COMB0_BM (1<<COM0B0)
+#define EXEC_TIMER_OCF_BM   (1<<OCF0A)        // Output compare match flag
+#define EXEC_TIMER_COMB1_BM (1<<COM0B1)       // Output compare register B mode1
+#define EXEC_TIMER_COMB0_BM (1<<COM0B0)       // Output compare register B mode0
 
 // Use 16-bit timer 1 for the DDA
 #define DDA_TIMER_CTRLA    TCCR1A             // Control register A
@@ -187,17 +186,16 @@
 #define LOAD_TIMER_CTRLB    TCCR2B            // Control register B
 #define LOAD_TIMER_IMSK     TIMSK2            // Interrupt mask register
 #define LOAD_TIMER_PERIOD   OCR2A             // Output compare register A (period of the timer)
-#define LOAD_TIMER_PWM_PERIOD OCR2B
+#define LOAD_TIMER_PWM_PERIOD OCR2B           // Output compare register B (PWM duty cycle)
 #define LOAD_TIMER_ISR_vect TIMER2_COMPA_vect // Output compare interrupt service routine vector
-#define LOAD_TIMER_CNT      TCNT2
-#define LOAD_TIMER_IFR      TIFR2
+#define LOAD_TIMER_CNT      TCNT2             // Timer count register
+#define LOAD_TIMER_IFR      TIFR2             // Interrupt flag register
 #define LOAD_TIMER_CS_BM    (1<<CS20)         // Set clock source to F_CPU
-#define LOAD_TIMER_WGM0_BM  (1<<WGM20)
-#define LOAD_TIMER_WGM_BM   (1<<WGM21)        // Waveform generation mode
-#define LOAD_TIMER_WGM2_BM  (1<<WGM22)
+#define LOAD_TIMER_WGM0_BM  (1<<WGM20)        // Waveform generation mode0
+#define LOAD_TIMER_WGM2_BM  (1<<WGM22)        // Waveform generation mode2
 #define LOAD_TIMER_OCIE_BM  (1<<OCIE2A)       // Enable output compare match interrupt
-#define LOAD_TIMER_OCF_BM   (1<<OCF2A)
-#define LOAD_TIMER_COMB1_BM (1<<COM2B1)
-#define LOAD_TIMER_COMB0_BM (1<<COM2B0)
+#define LOAD_TIMER_OCF_BM   (1<<OCF2A)        // Output compare match flag
+#define LOAD_TIMER_COMB1_BM (1<<COM2B1)       // Output compare register B mode1
+#define LOAD_TIMER_COMB0_BM (1<<COM2B0)       // Output compare register B mode0
 
 #endif  // HARDWARE_H
