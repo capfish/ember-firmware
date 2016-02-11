@@ -91,6 +91,16 @@ Status AxisSettings::SetMicrosteppingMode(uint8_t value)
     return MC_STATUS_SUCCESS;
 }
 
+// Set the motor current
+// value The settings value corresponding to the duty cycle
+//       represented as 1 - value/255
+Status AxisSettings::SetMotorCurrent(uint8_t value)
+{
+    motorCurrent = value;
+
+    return MC_STATUS_SUCCESS;
+}
+
 // Return the number of pulses required to move this axis by one unit
 float AxisSettings::PulsesPerUnit() const
 {
