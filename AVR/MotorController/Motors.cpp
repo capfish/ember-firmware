@@ -58,7 +58,6 @@
 // much less than the old one you must reset it or risk motor stalls.
 #define ACCUMULATOR_RESET_FACTOR 2  // amount counter range can safely change
 
-
 // Runtime structures - used exclusively by step generation ISR (HI)
 struct MotorRuntimeState // one per controlled motor
 {     
@@ -122,18 +121,28 @@ void Motors::Initialize(MotorController_t* mc)
     DDA_TIMER_PERIOD = _f_to_period(F_DDA);
 
     // Setup load software interrupt timer
-    // Clear timer and generate interrupt on compare match
-    LOAD_TIMER_CTRLA  = LOAD_TIMER_WGM_BM;
+    // Clear timer and generate interrupt on compare match A
+    // and setup PWM on compare match B
+    LOAD_TIMER_CTRLA  |= LOAD_TIMER_WGM0_BM;
+    LOAD_TIMER_CTRLA  |= LOAD_TIMER_WGM2_BM;
+    LOAD_TIMER_CTRLA  |= LOAD_TIMER_COMB1_BM;
+    LOAD_TIMER_CTRLA  |= LOAD_TIMER_COMB0_BM;
     LOAD_TIMER_CTRLB  = 0;
     LOAD_TIMER_IMSK   = LOAD_TIMER_OCIE_BM;
     LOAD_TIMER_PERIOD = SOFTWARE_INTERRUPT_PERIOD;
+    LOAD_TIMER_PWM_PERIOD = AxisSettings::Current();
 
     // Setup exec software interrupt timer
-    // Clear timer and generate interrupt on compare match
-    EXEC_TIMER_CTRLA  = EXEC_TIMER_WGM_BM;
+    // Clear timer and generate interrupt on compare match A
+    // and setup PWM on compare match B
+    EXEC_TIMER_CTRLA  |= EXEC_TIMER_WGM0_BM;
+    EXEC_TIMER_CTRLA  |= EXEC_TIMER_WGM2_BM;
+    EXEC_TIMER_CTRLA  |= EXEC_TIMER_COMB1_BM;
+    EXEC_TIMER_CTRLA  |= EXEC_TIMER_COMB0_BM;
     EXEC_TIMER_CTRLB  = 0;
-    EXEC_TIMER_IMSK   = EXEC_TIMER_OCIE_BM;
+    EXEC_TIMER_IMSK   = EXEC_TIMER_OCIE_BM;    
     EXEC_TIMER_PERIOD =  SOFTWARE_INTERRUPT_PERIOD;
+    EXEC_TIMER_PWM_PERIOD = AxisSettings::Current();
 
     // Set data direction for motor I/O pins
     MOTOR_SLEEP_DDR       |= MOTOR_SLEEP_DD_BM;
@@ -142,8 +151,10 @@ void Motors::Initialize(MotorController_t* mc)
     MOTOR_MODE0_DDR       |= MOTOR_MODE0_DD_BM;
     MOTOR_MODE1_DDR       |= MOTOR_MODE1_DD_BM;
     MOTOR_MODE2_DDR       |= MOTOR_MODE2_DD_BM;
+    MOTOR_Z_CUR_DDR       |= MOTOR_Z_CUR_DD_BM;
     MOTOR_Z_STEP_DDR      |= MOTOR_Z_STEP_DD_BM;
     MOTOR_Z_DIRECTION_DDR |= MOTOR_Z_DIRECTION_DD_BM;
+    MOTOR_R_CUR_DDR       |= MOTOR_R_CUR_DD_BM;
     MOTOR_R_STEP_DDR      |= MOTOR_R_STEP_DD_BM;
     MOTOR_R_DIRECTION_DDR |= MOTOR_R_DIRECTION_DD_BM;
 
@@ -289,8 +300,13 @@ void Motors::SetNextSegmentNull()
 // Request execution of next move using timer-driven software interrupt
 void Motors::RequestMoveExecution()
 {
-    if (prepState.executionState == PREP_BUFFER_OWNED_BY_EXEC)
+    if (prepState.executionState == PREP_BUFFER_OWNED_BY_EXEC) {
+        EXEC_TIMER_CTRLB &= ~EXEC_TIMER_CS_BM;
+        EXEC_TIMER_CNT = 0;
+        EXEC_TIMER_IFR |= EXEC_TIMER_OCF_BM;
+        EXEC_TIMER_IMSK = EXEC_TIMER_OCIE_BM;
         EXEC_TIMER_CTRLB |= EXEC_TIMER_CS_BM;
+    }
 }
 
 // Dequeue move and load into stepper struct
@@ -406,7 +422,8 @@ ISR(DDA_TIMER_ISR_vect)
 ISR(EXEC_TIMER_ISR_vect)
 {
     // Disable timer
-    EXEC_TIMER_CTRLB &= ~EXEC_TIMER_CS_BM;
+    // EXEC_TIMER_CTRLB &= ~EXEC_TIMER_CS_BM;
+    EXEC_TIMER_IMSK = 0;
   
     // Verify state
     if (prepState.executionState == PREP_BUFFER_OWNED_BY_EXEC)
@@ -426,8 +443,13 @@ ISR(EXEC_TIMER_ISR_vect)
             prepState.executionState = PREP_BUFFER_OWNED_BY_LOADER;
             
             // Only fire an interrupt to load the next move if the currently loaded move is complete
-            if (runtimeState.ddaTicksDowncount == 0)
+            if (runtimeState.ddaTicksDowncount == 0) {
+                LOAD_TIMER_CTRLB &= ~LOAD_TIMER_CS_BM;
+                LOAD_TIMER_CNT = 0;
+                LOAD_TIMER_IFR |= LOAD_TIMER_OCF_BM;
+                LOAD_TIMER_IMSK = LOAD_TIMER_OCIE_BM;
                 LOAD_TIMER_CTRLB |= LOAD_TIMER_CS_BM;
+            }
         }
     }
 }
@@ -436,7 +458,8 @@ ISR(EXEC_TIMER_ISR_vect)
 // Responds to interrupt
 ISR(LOAD_TIMER_ISR_vect)
 {
-    LOAD_TIMER_CTRLB &= ~LOAD_TIMER_CS_BM; // Disable load software interrupt timer
+    // LOAD_TIMER_CTRLB &= ~LOAD_TIMER_CS_BM; // Disable load software interrupt timer
+    LOAD_TIMER_IMSK = 0;
     loadMove();
 }
 
